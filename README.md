@@ -2,6 +2,20 @@
 
 App de finanças pessoais que roda **só no celular**: instale pelo Safari em **Compartilhar → Adicionar à Tela de Início**. Este repositório contém apenas o código; nenhum dado financeiro fica aqui.
 
+## Economia complexa (opcional)
+
+Toque na **engrenagem** no canto superior e ligue **"Usar economia complexa"**. Aparece a aba **Análise**, com:
+
+- **Saúde do mês:** taxa de poupança, renda comprometida, endividamento e divisão da renda comparada à regra ideal (50/30/20 ou a que você definir).
+- **Reserva de emergência:** saldo estimado com rendimento líquido de IR (juros compostos) e quantos meses de custo essencial ele cobre, comparado à sua meta.
+- **Projeção de patrimônio:** conta + reserva mês a mês até 60 meses, usando parcelas e salários já lançados e médias do histórico. Mostra também o valor descontada a inflação.
+- **Resultado realizado no ano:** superávit e déficit por mês.
+- **Parcelas e dívidas futuras:** quanto falta pagar, por mês e por compra.
+- **Gastos variáveis:** média, oscilação, meses atípicos e categorias que mais mudaram.
+- **Independência financeira:** patrimônio necessário pela taxa de retirada segura e tempo estimado no ritmo atual.
+
+Os parâmetros (saldos, rendimento, IR, inflação, metas, janela das médias, média ou mediana, horizonte) ficam salvos só no aparelho. As taxas de mercado são estimativas suas: ajuste aos seus números. Não é recomendação de investimento.
+
 ## Detalhes
 
 Esta versão roda **só no celular**. Não precisa do PC ligado nem de servidor: os cálculos acontecem no próprio iPhone, os dados ficam guardados nele e o app funciona sem internet.

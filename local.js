@@ -13,12 +13,14 @@
   function db() {
     if (dbp) return dbp;
     dbp = new Promise(function (resolve, reject) {
-      var req = indexedDB.open("economist", 1);
+      // v2: adiciona "settings" (preferências, como a economia complexa). Dados existentes são mantidos.
+      var req = indexedDB.open("economist", 2);
       req.onupgradeneeded = function () {
         var d = req.result;
-        d.createObjectStore("entries", { keyPath: "id" });
-        d.createObjectStore("budgets", { keyPath: "month" });
-        d.createObjectStore("safety", { keyPath: "stamp" }); // cópias antes de restaurar
+        if (!d.objectStoreNames.contains("entries")) d.createObjectStore("entries", { keyPath: "id" });
+        if (!d.objectStoreNames.contains("budgets")) d.createObjectStore("budgets", { keyPath: "month" });
+        if (!d.objectStoreNames.contains("safety")) d.createObjectStore("safety", { keyPath: "stamp" }); // cópias antes de restaurar
+        if (!d.objectStoreNames.contains("settings")) d.createObjectStore("settings", { keyPath: "key" });
       };
       req.onsuccess = function () { resolve(req.result); };
       req.onerror = function () { reject("Não foi possível abrir o armazenamento deste celular."); };
@@ -332,5 +334,16 @@
   }
 
   // Exposto para testes.
-  window.__economist = { summarize: summarize, addMonths: addMonths };
+  // API usada pelo módulo de economia complexa (complex.js).
+  window.__economist = {
+    summarize: summarize,
+    addMonths: addMonths,
+    snapshot: snapshot,
+    getSetting: function (key) {
+      return getOne("settings", key).then(function (r) { return r ? r.value : undefined; });
+    },
+    setSetting: function (key, value) {
+      return write(function (tx) { tx.objectStore("settings").put({ key: key, value: value }); }, ["settings"]);
+    },
+  };
 })();
