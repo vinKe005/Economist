@@ -1,0 +1,49 @@
+:root {
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --text-xs: max(12px, 0.75rem); --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem; --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.074rem;
+  --text-display-s: 1.44rem; --text-display: 1.728rem; --text-section: 1.2rem; --text-title: 1rem; --text-lead: 1rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --color-error: oklch(52% 0.19 27); --color-success: oklch(50% 0.12 150);
+  --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
+  --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
+  /* Cores do Economist em OKLCH: o verde da marca e uma escala tingida para ele. */
+  --color-surface: oklch(99.1% 0.005 125); /* fundo de cartões e campos (antes #fff) */
+  --color-paper: oklch(97.6% 0.007 122); /* fundo da página */
+  --color-paper-2: oklch(95.8% 0.013 125); /* poço tingido: item ativo, selos */
+  --color-paper-3: oklch(94.2% 0.016 124); /* poço mais forte, trilhos */
+  --color-rule: oklch(92.6% 0.014 124); /* linhas e bordas */
+  --color-rule-2: oklch(90.6% 0.02 128); /* borda de campos */
+  --color-rule-3: oklch(83% 0.018 130); /* borda forte, trilho de progresso */
+  --color-ink: oklch(31% 0.035 162); /* texto principal */
+  --color-ink-2: oklch(42% 0.035 150); /* texto secundário */
+  --color-muted: oklch(50% 0.03 138); /* texto apagado (4,5:1 no papel) */
+  --color-icon: oklch(61% 0.035 135); /* ícones e marcas não textuais (3:1) */
+  --color-accent: oklch(39.6% 0.056 165); /* verde da marca: ação principal, item ativo */
+  --color-accent-strong: oklch(34% 0.055 163); /* verde da marca escuro (hover) */
+  --color-accent-ink: oklch(93.5% 0.045 124); /* texto sobre o verde da marca */
+  --color-positive: oklch(52% 0.072 167); /* receita, valores positivos */
+  --color-leaf: oklch(57% 0.07 139); /* verde médio: barras, progresso */
+  --color-leaf-soft: oklch(69% 0.06 132); /* verde claro não textual */
+  --color-focus: oklch(46% 0.14 158); /* anel de foco */
+  --color-warm: oklch(77% 0.079 68); /* despesa em gráficos (não textual) */
+  --color-warm-ink: oklch(54% 0.08 70); /* texto em tom quente */
+  --color-warm-paper: oklch(96.8% 0.017 82); /* fundo quente (previsto) */
+  --color-danger: oklch(49% 0.115 38); /* negativo, excluir */
+  --color-danger-mark: oklch(58% 0.115 37); /* ícone de despesa (não textual) */
+  --color-danger-paper: oklch(94.5% 0.021 56); /* fundo de alerta */
+  --color-violet: oklch(50% 0.06 308); /* ícone de reserva */
+  --color-violet-paper: oklch(96% 0.01 311); /* fundo do ícone de reserva */
+  /* séries dos gráficos da Análise (validadas para daltonismo e contraste) */
+  --color-series-1: oklch(57.5% 0.163 256); /* patrimônio, saldo */
+  --color-series-2: oklch(67.1% 0.175 41);   /* despesa, déficit */
+  --color-series-3: oklch(66.9% 0.141 162);    /* receita, reserva, superávit */
+  --color-good: oklch(52% 0.17 143); --color-warn: oklch(73.6% 0.154 76); --color-bad: oklch(52% 0.19 27);
+  --font-display: var(--font-body);
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-outlier: var(--font-body);
+  --radius-card: 12px; --radius-control: 8px; --radius-pill: 999px; --rule-hair: 1px;
+  --shadow-card: 0 1px 2px oklch(20% 0.01 160 / 0.05);
+  --shadow-float: 0 0 0 1px oklch(30% 0.01 160 / 0.06), 0 12px 32px oklch(20% 0.02 160 / 0.14);
+  --tracking-display: -0.02em;
+}

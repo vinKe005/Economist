@@ -1,7 +1,7 @@
 // Guarda o app no aparelho para abrir sem internet. Os DADOS ficam no IndexedDB, não aqui.
-const CACHE = "economist-v3";
+const CACHE = "economist-v5";
 const FILES = [
-  "./", "index.html", "local.js", "complex.js", "complex.css", "mobile.css", "manifest.webmanifest",
+  "./", "index.html", "local.js", "complex.js", "economist.css", "tokens.css", "base.css", "complex.css", "mobile.css", "manifest.webmanifest",
   "icon.svg", "icon-180.png", "icon-512.png",
   "assets/index-DzUa1fhy.js", "assets/charts-DIMd8OrP.js", "assets/index-C7ZS6Hca.css",
 ];

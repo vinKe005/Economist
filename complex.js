@@ -28,12 +28,13 @@
   var cfg = clone(DEFAULTS);
   var view = { open: false, month: monthOf(new Date()) };
 
-  // Cores: 3 primeiras posições da paleta categórica validada (daltonismo, contraste).
-  var C = { blue: "#2a78d6", orange: "#eb6834", aqua: "#1baf7a" };
+  // Cores: tokens do tema (tokens.css). As três séries são a paleta categórica validada
+  // para daltonismo e contraste; os estados são reservados (nunca viram série).
+  var C = { blue: "var(--color-series-1)", orange: "var(--color-series-2)", aqua: "var(--color-series-3)" };
   var STATUS = {
-    good: { color: "#0ca30c", icon: "✓", label: "Saudável" },
-    warn: { color: "#e09a00", icon: "!", label: "Atenção" },
-    bad: { color: "#d03b3b", icon: "✕", label: "Crítico" }
+    good: { color: "var(--color-good)", icon: "✓", label: "Saudável" },
+    warn: { color: "var(--color-warn)", icon: "!", label: "Atenção" },
+    bad: { color: "var(--color-bad)", icon: "✕", label: "Crítico" }
   };
   var MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
   var MESES_LONGOS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -52,8 +53,9 @@
     var v = c / 100;
     return (v < 0 ? "−" : "") + "R$ " + (Math.abs(v) >= 1000 ? brlCompact.format(Math.abs(v)) : Math.round(Math.abs(v)));
   }
+  var NONE = "sem dados";
   function pct(x, d) {
-    if (x == null || !isFinite(x)) return "—";
+    if (x == null || !isFinite(x)) return NONE;
     return (x * 100).toLocaleString("pt-BR", { minimumFractionDigits: d == null ? 1 : d, maximumFractionDigits: d == null ? 1 : d }) + "%";
   }
   function num(x, d) { return x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d }); }
@@ -238,16 +240,22 @@
     return t;
   }
   function legendHTML(items) {
-    return '<div class="cx-legend">' + items.map(function (it) {
-      return '<span><i style="background:' + it.color + (it.dash ? ';background:repeating-linear-gradient(90deg,' + it.color + ' 0 4px,transparent 4px 7px)' : '') + '"></i>' + esc(it.name) + "</span>";
-    }).join("") + "</div>";
+    return '<ul class="cx-legend">' + items.map(function (it) {
+      return '<li><i style="background:' + it.color + '"></i>' + esc(it.name) + "</li>";
+    }).join("") + "</ul>";
+  }
+  // Tabela simples: cabeçalho em caixa normal, só linhas horizontais. cols: "num" alinha à direita.
+  function table(head, rows, cols) {
+    return '<div class="cx-table-scroll"><table class="cx-table"><thead><tr>' +
+      head.map(function (h, i) { return "<th" + (cols && cols[i] === "num" ? ' class="r"' : "") + ' scope="col">' + esc(h) + "</th>"; }).join("") +
+      "</tr></thead><tbody>" + rows.map(function (r) {
+        return "<tr>" + r.map(function (c, i) {
+          return (i === 0 ? '<th scope="row">' : "<td" + (cols && cols[i] === "num" ? ' class="r"' : "") + ' data-label="' + esc(head[i]) + '">') + esc(c) + (i === 0 ? "</th>" : "</td>");
+        }).join("") + "</tr>";
+      }).join("") + "</tbody></table></div>";
   }
   function tableHTML(head, rows) {
-    return '<details class="cx-table"><summary>Ver tabela</summary><div class="cx-table-scroll"><table><thead><tr>' +
-      head.map(function (h, i) { return "<th" + (i ? ' class="r"' : "") + ">" + esc(h) + "</th>"; }).join("") +
-      "</tr></thead><tbody>" + rows.map(function (r) {
-        return "<tr>" + r.map(function (c, i) { return "<td" + (i ? ' class="r"' : "") + ">" + esc(c) + "</td>"; }).join("") + "</tr>";
-      }).join("") + "</tbody></table></div></details>";
+    return '<details class="cx-details"><summary>Ver tabela</summary>' + table(head, rows, head.map(function (_, i) { return i ? "num" : ""; })) + "</details>";
   }
 
   // Gráfico de linhas com cruz de leitura (toque ou passe o dedo).
@@ -270,12 +278,12 @@
     });
     opt.series.forEach(function (s) {
       var d = s.values.map(function (v, i) { return (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1); }).join("");
-      svg += '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"' + (s.dash ? ' stroke-dasharray="5 4"' : "") + "/>";
+      svg += '<path d="' + d + '" style="fill:none;stroke:' + s.color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"' + (s.dash ? ' stroke-dasharray="5 4"' : "") + "/>";
       var last = s.values.length - 1;
-      svg += '<circle cx="' + X(last) + '" cy="' + Y(s.values[last]) + '" r="4" fill="' + s.color + '" stroke="#fff" stroke-width="2"/>';
+      svg += '<circle cx="' + X(last) + '" cy="' + Y(s.values[last]) + '" r="4" style="fill:' + s.color + ';stroke:var(--color-surface)" stroke-width="2"/>';
     });
     svg += '<g class="cx-cross" style="display:none"><line y1="' + pt + '" y2="' + (H - pb) + '" class="cx-crossline"/>' +
-      opt.series.map(function (s) { return '<circle r="4.5" fill="' + s.color + '" stroke="#fff" stroke-width="2"/>'; }).join("") + "</g>";
+      opt.series.map(function (s) { return '<circle r="4.5" style="fill:' + s.color + ';stroke:var(--color-surface)" stroke-width="2"/>'; }).join("") + "</g>";
     svg += '<rect class="cx-hit" x="' + pl + '" y="0" width="' + (W - pl - pr) + '" height="' + H + '" fill="transparent"/></svg>';
     host.innerHTML = svg + '<div class="cx-tip" hidden></div>';
     var el = host.querySelector("svg"), cross = el.querySelector(".cx-cross"), tip = host.querySelector(".cx-tip");
@@ -319,7 +327,7 @@
         var d = v >= 0
           ? "M" + x + " " + zero + "V" + (top + r) + "Q" + x + " " + top + " " + (x + r) + " " + top + "H" + (x + bw - r) + "Q" + (x + bw) + " " + top + " " + (x + bw) + " " + (top + r) + "V" + zero + "Z"
           : "M" + x + " " + zero + "V" + (top - r) + "Q" + x + " " + top + " " + (x + r) + " " + top + "H" + (x + bw - r) + "Q" + (x + bw) + " " + top + " " + (x + bw) + " " + (top - r) + "V" + zero + "Z";
-        svg += '<path d="' + d + '" fill="' + color + '"/>';
+        svg += '<path d="' + d + '" style="fill:' + color + '"/>';
       }
       svg += '<rect class="cx-bar-hit" data-i="' + i + '" x="' + (pl + slot * i) + '" y="' + pt + '" width="' + slot + '" height="' + (H - pt - pb) + '" fill="transparent"/>';
       if (i % every === 0) svg += '<text x="' + cx + '" y="' + (H - 7) + '" class="cx-ax" text-anchor="middle">' + esc(opt.labels[i]) + "</text>";
@@ -354,14 +362,27 @@
   function badge(st) {
     if (!st) return "";
     var s = STATUS[st];
-    return '<span class="cx-badge"><i style="background:' + s.color + '">' + s.icon + "</i>" + s.label + "</span>";
+    return '<span class="cx-badge cx-' + st + '"><i aria-hidden="true">' + s.icon + "</i>" + s.label + "</span>";
   }
-  function kpi(label, value, sub, st) {
-    return '<div class="cx-kpi"><span class="cx-kpi-l">' + esc(label) + "</span><strong>" + esc(value) + "</strong>" +
-      (sub ? "<small>" + esc(sub) + "</small>" : "") + badge(st) + "</div>";
+  // Um número com rótulo, numa linha de números separada por linhas finas (nunca um cartão).
+  function stat(label, value, note, st) {
+    return '<div class="cx-stat"><dt>' + esc(label) + '</dt><dd class="cx-figure">' + esc(value) + "</dd>" +
+      (note ? '<dd class="cx-stat-note">' + esc(note) + "</dd>" : "") + (st ? "<dd>" + badge(st) + "</dd>" : "") + "</div>";
   }
-  function row(label, value, cls) {
-    return '<div class="cx-row' + (cls ? " " + cls : "") + '"><span>' + esc(label) + "</span><b>" + esc(value) + "</b></div>";
+  function stats(items) { return '<dl class="cx-stats">' + items.join("") + "</dl>"; }
+  // Lista de pares rótulo e valor, com linha fina entre eles.
+  function rows(pairs) {
+    return '<dl class="cx-rows">' + pairs.map(function (p) {
+      return "<div><dt>" + esc(p[0]) + '</dt><dd class="cx-figure">' + esc(p[1]) + "</dd></div>";
+    }).join("") + "</dl>";
+  }
+  function section(id, title, inner, lead) {
+    return '<section class="cx-section' + (lead ? " cx-lead" : "") + '" aria-labelledby="cx-' + id + '"><h2 id="cx-' + id + '">' + esc(title) + "</h2>" + inner + "</section>";
+  }
+  function relDiff(now, avg) {
+    if (!avg) return "";
+    var r = (now - avg) / avg;
+    return pct(Math.abs(r)) + (r >= 0 ? " acima da média" : " abaixo da média");
   }
 
   function render() {
@@ -372,158 +393,163 @@
       var budget = budgets.filter(function (b) { return b.month === ref; })[0];
       var html = "";
 
-      html += '<header class="cx-head"><div><div class="cx-eyebrow">ECONOMIA COMPLEXA</div><h1>Análise avançada</h1>' +
-        "<p>Indicadores, projeções e metas com os seus parâmetros.</p></div>" +
-        '<button class="cx-icon-btn" data-act="settings" aria-label="Ajustar parâmetros">' + ICON.sliders + "</button></header>";
-      html += '<div class="cx-picker"><button data-act="prev" aria-label="Mês anterior">' + ICON.left + "</button><strong>" +
-        esc(labelMonth(ref, true)) + '</strong><button data-act="next" aria-label="Próximo mês">' + ICON.right + "</button></div>";
+      html += '<header class="cx-head"><div><h1>Análise</h1>' +
+        "<p>Projeções e indicadores calculados com os seus parâmetros.</p></div>" +
+        '<button class="cx-icon-btn" type="button" data-act="settings" aria-label="Ajustar parâmetros">' + ICON.sliders + "</button></header>";
+      html += '<div class="cx-picker"><button type="button" data-act="prev" aria-label="Mês anterior">' + ICON.left + "</button><strong>" +
+        esc(labelMonth(ref, true)) + '</strong><button type="button" data-act="next" aria-label="Próximo mês">' + ICON.right + "</button></div>";
 
       if (!entries.length) {
-        html += '<section class="cx-card cx-empty"><h2>Sem dados ainda</h2><p>Cadastre receitas e despesas na aba Mensal. O painel avançado usa esses lançamentos.</p></section>';
+        html += section("vazio", "Ainda não há lançamentos", "<p>Cadastre receitas e despesas na aba Mensal. A análise é calculada a partir deles.</p>" +
+          '<button class="cx-outline" type="button" data-act="mensal">Ir para Mensal</button>');
         root.querySelector(".cx-body").innerHTML = html;
         return;
       }
 
-      // 1) Saúde do mês
+      // 1) A peça principal: o patrimônio projetado
+      var rsv = reserveNow(entries);
+      var proj = project(by, av, rsv.value);
+      var last = proj[proj.length - 1], minConta = proj.reduce(function (m, p) { return p.conta < m.conta ? p : m; }, proj[0]);
+      var lead = '<p class="cx-hero">' + esc(money(last.total)) + "</p>" +
+        '<p class="cx-lede">' + esc(money(last.real)) + " em valores de hoje, com inflação de " + num(cfg.inflacao, 1) + "% ao ano. Soma da conta e da reserva, mês a mês.</p>" +
+        legendHTML([{ name: "Patrimônio total", color: C.blue }, { name: "Reserva", color: C.aqua }]) +
+        '<div class="cx-chart cx-chart-lead" data-chart="proj"></div>';
+      if (minConta.conta < 0) lead += '<p class="cx-alert" role="status">' + badge("bad") + " O saldo em conta fica negativo em " + esc(labelMonth(minConta.key, true)) + " (" + esc(money(minConta.conta)) + "). Revise despesas ou aportes.</p>";
+      lead += '<p class="cx-note">Usa os lançamentos já cadastrados, como parcelas e salários futuros. Nos meses sem dados, usa a ' +
+        (cfg.metodo === "mediana" ? "mediana" : "média") + " de " + av.months.length + " mês(es) de histórico, com despesas reajustadas pela inflação e receitas sem reajuste.</p>";
+      lead += tableHTML(["Mês", "Conta", "Reserva", "Total", "Valor de hoje"], proj.map(function (p) {
+        return [labelMonth(p.key) + (p.estimated ? " (estimado)" : ""), money(p.conta), money(p.reserva), money(p.total), money(p.real)];
+      }));
+      html += section("proj", "Patrimônio em " + labelMonth(last.key, true).toLowerCase(), lead, true);
+
+      // 2) Saúde do mês (planejado)
       var inc = cur.income, exp = cur.fixed + cur.debt + cur.variable;
       var dInc = cur.dIncome, dExp = cur.dFixed + cur.dDebt + cur.dVariable;
       var saving = inc ? (inc - exp) / inc : null, dSaving = dInc ? (dInc - dExp) / dInc : null;
       var commit = inc ? (cur.fixed + cur.debt) / inc : null, debtR = inc ? cur.debt / inc : null;
-      html += '<section class="cx-card"><div class="cx-card-head"><h2>Saúde do mês</h2><span class="cx-chip">PLANEJADO</span></div>';
-      html += '<div class="cx-kpis">' +
-        kpi("Taxa de poupança", pct(saving), "Realizado: " + pct(dSaving), statusOf("saving", saving)) +
-        kpi("Renda comprometida", pct(commit), "Fixas + dívidas", statusOf("commit", commit)) +
-        kpi("Endividamento", pct(debtR), "Parcelas ÷ renda", statusOf("debt", debtR)) +
-        kpi("Sobra planejada", money(inc - exp), "Receitas − despesas") + "</div>";
+      var health = '<p class="cx-lede">O que está planejado para ' + esc(labelMonth(ref, true).toLowerCase()) + ".</p>" + stats([
+        stat("Taxa de poupança", pct(saving), dSaving == null ? "Nada realizado ainda" : "Realizado: " + pct(dSaving), statusOf("saving", saving)),
+        stat("Renda comprometida", pct(commit), "Fixas e dívidas", statusOf("commit", commit)),
+        stat("Endividamento", pct(debtR), "Parcelas sobre a renda", statusOf("debt", debtR)),
+        stat("Sobra planejada", money(inc - exp), "Receitas menos despesas")
+      ]);
       if (inc > 0) {
         var needs = cur.fixed + cur.debt, wants = cur.variable, save = Math.max(0, inc - needs - wants), tot = Math.max(inc, needs + wants);
-        var seg = function (parts) {
-          return '<div class="cx-seg">' + parts.map(function (p) {
+        var seg = function (label, parts) {
+          return '<div class="cx-seg-row"><span>' + label + '</span><div class="cx-seg" role="img" aria-label="' + esc(label + ": " + parts.map(function (p) { return p.n + " " + Math.round(p.v * 100) + "%"; }).join(", ")) + '">' + parts.map(function (p) {
             var w = Math.max(0, p.v * 100);
-            return w > 0 ? '<span style="width:' + w + "%;background:" + p.c + '">' + (w >= 12 ? Math.round(w) + "%" : "") + "</span>" : "";
-          }).join("") + "</div>";
+            return w > 0 ? '<span style="width:' + w + "%;background:" + p.c + '"></span>' : "";
+          }).join("") + "</div></div>";
         };
-        html += '<div class="cx-sub">Divisão da renda <small>(regra ' + cfg.ideal.join("/") + ")</small></div>";
-        html += legendHTML([{ name: "Necessidades", color: C.blue }, { name: "Desejos", color: C.orange }, { name: "Poupança", color: C.aqua }]);
-        html += '<div class="cx-seg-row"><span>Seu mês</span>' + seg([{ v: needs / tot, c: C.blue }, { v: wants / tot, c: C.orange }, { v: save / tot, c: C.aqua }]) + "</div>";
-        html += '<div class="cx-seg-row"><span>Ideal</span>' + seg([{ v: cfg.ideal[0] / 100, c: C.blue }, { v: cfg.ideal[1] / 100, c: C.orange }, { v: cfg.ideal[2] / 100, c: C.aqua }]) + "</div>";
-        if (needs + wants > inc) html += '<p class="cx-note cx-warn">As despesas planejadas passam a renda em ' + esc(money(needs + wants - inc)) + ".</p>";
+        var share = function (v) { return Math.round(v * 100) + "%"; };
+        health += '<h3>Divisão da renda, comparada à regra ' + cfg.ideal.join("/") + "</h3>";
+        health += '<ul class="cx-legend">' + [["Necessidades", C.blue, needs / tot, cfg.ideal[0]], ["Desejos", C.orange, wants / tot, cfg.ideal[1]], ["Poupança", C.aqua, save / tot, cfg.ideal[2]]].map(function (x) {
+          return '<li><i style="background:' + x[1] + '"></i>' + x[0] + " <b>" + share(x[2]) + "</b> (ideal " + x[3] + "%)</li>";
+        }).join("") + "</ul>";
+        health += seg("Seu mês", [{ n: "Necessidades", v: needs / tot, c: C.blue }, { n: "Desejos", v: wants / tot, c: C.orange }, { n: "Poupança", v: save / tot, c: C.aqua }]);
+        health += seg("Ideal", [{ n: "Necessidades", v: cfg.ideal[0] / 100, c: C.blue }, { n: "Desejos", v: cfg.ideal[1] / 100, c: C.orange }, { n: "Poupança", v: cfg.ideal[2] / 100, c: C.aqua }]);
+        if (needs + wants > inc) health += '<p class="cx-alert" role="status">' + badge("bad") + " As despesas planejadas passam a renda em " + esc(money(needs + wants - inc)) + ".</p>";
       }
-      if (budget) html += '<p class="cx-note">Meta de reserva do mês: ' + esc(money(budget.goal)) + " · margem: " + esc(money(budget.margin)) + ".</p>";
-      html += "</section>";
+      if (budget) health += '<p class="cx-note">Meta de reserva do mês: ' + esc(money(budget.goal)) + ". Margem de segurança: " + esc(money(budget.margin)) + ".</p>";
+      html += section("saude", "Saúde do mês", health);
 
-      // 2) Reserva de emergência
-      var rsv = reserveNow(entries), cover = av.essential > 0 ? rsv.value / av.essential : null;
+      // 3) Reserva de emergência
+      var cover = av.essential > 0 ? rsv.value / av.essential : null;
       var coverTotal = av.total > 0 ? rsv.value / av.total : null, target = av.essential * cfg.metaMeses;
-      html += '<section class="cx-card"><div class="cx-card-head"><h2>Reserva de emergência</h2>' + badge(statusOf("cover", cover)) + "</div>";
-      html += '<div class="cx-hero"><strong>' + (cover == null ? "—" : num(cover, 1)) + '</strong><span>meses de custo essencial cobertos</span></div>';
       var prog = target > 0 ? Math.min(1, rsv.value / target) : 0;
-      html += '<div class="cx-progress" role="progressbar" aria-valuenow="' + Math.round(prog * 100) + '" aria-valuemin="0" aria-valuemax="100"><span style="width:' + (prog * 100) + '%"></span></div>';
-      html += '<div class="cx-progress-l"><span>' + esc(money(rsv.value)) + "</span><span>meta " + cfg.metaMeses + " meses · " + esc(money(target)) + "</span></div>";
-      html += row("Reserva estimada hoje (com rendimento)", money(rsv.value)) +
-        row("Aportes realizados considerados", money(rsv.aportes)) +
-        row("Custo essencial médio (fixas + dívidas)", money(Math.round(av.essential)) + "/mês") +
-        row("Cobertura do custo total (com variáveis)", coverTotal == null ? "—" : num(coverTotal, 1) + " meses") +
-        row("Falta para a meta", money(Math.max(0, Math.round(target - rsv.value))));
-      html += '<p class="cx-note">Rendimento líquido: ' + num(netAnnual(), 2) + "% a.a. (" + num(cfg.rendimento, 2) + "% − " + num(cfg.ir, 1) + "% de IR) · " +
-        "equivale a " + num(monthlyRate(netAnnual()) * 100, 3) + "% a.m. em juros compostos.</p></section>";
+      var reserve = '<div class="cx-hero-row"><p class="cx-hero">' + (cover == null ? NONE : num(cover, 1) + " meses") + "</p>" + badge(statusOf("cover", cover)) + "</div>" +
+        '<p class="cx-lede">de custo essencial cobertos pela reserva. A meta é ' + num(cfg.metaMeses, 0) + " meses, ou " + esc(money(Math.round(target))) + ".</p>" +
+        '<div class="cx-progress" role="progressbar" aria-label="Reserva em relação à meta" aria-valuenow="' + Math.round(prog * 100) + '" aria-valuemin="0" aria-valuemax="100"><span style="width:' + (prog * 100) + '%"></span></div>' +
+        rows([
+          ["Reserva estimada hoje, com rendimento", money(rsv.value)],
+          ["Aportes realizados considerados", money(rsv.aportes)],
+          ["Custo essencial médio por mês", money(Math.round(av.essential))],
+          ["Cobertura do custo total, com variáveis", coverTotal == null ? NONE : num(coverTotal, 1) + " meses"],
+          ["Falta para a meta", money(Math.max(0, Math.round(target - rsv.value)))]
+        ]) +
+        '<p class="cx-note">Rendimento líquido de ' + num(netAnnual(), 2) + "% ao ano (" + num(cfg.rendimento, 2) + "% menos " + num(cfg.ir, 1) + "% de IR), equivalente a " +
+        num(monthlyRate(netAnnual()) * 100, 3) + "% ao mês em juros compostos.</p>";
+      html += section("reserva", "Reserva de emergência", reserve);
 
-      // 3) Projeção de patrimônio
-      var proj = project(by, av, rsv.value);
-      var last = proj[proj.length - 1], minConta = proj.reduce(function (m, p) { return p.conta < m.conta ? p : m; }, proj[0]);
-      html += '<section class="cx-card"><div class="cx-card-head"><h2>Projeção de patrimônio</h2><span class="cx-chip">' + cfg.horizonte + " MESES</span></div>";
-      html += '<div class="cx-kpis">' +
-        kpi("Patrimônio em " + labelMonth(last.key), money(last.total), "Conta + reserva") +
-        kpi("Em valores de hoje", money(last.real), "Descontada a inflação de " + num(cfg.inflacao, 1) + "% a.a.") + "</div>";
-      html += legendHTML([{ name: "Patrimônio total", color: C.blue }, { name: "Reserva", color: C.aqua }]);
-      html += '<div class="cx-chart" data-chart="proj"></div>';
-      if (minConta.conta < 0) html += '<p class="cx-note cx-warn">' + STATUS.bad.icon + " O saldo em conta fica negativo em " + esc(labelMonth(minConta.key, true)) + " (" + esc(money(minConta.conta)) + "). Revise despesas ou aportes.</p>";
-      html += '<p class="cx-note">Usa os lançamentos já cadastrados (parcelas, salários futuros) e, nos meses sem dados, a ' +
-        (cfg.metodo === "mediana" ? "mediana" : "média") + " de " + av.months.length + " mês(es) de histórico, com despesas reajustadas pela inflação. Receitas estimadas sem reajuste.</p>";
-      html += tableHTML(["Mês", "Conta", "Reserva", "Total", "Valor de hoje"], proj.map(function (p) {
-        return [labelMonth(p.key) + (p.estimated ? "*" : ""), money(p.conta), money(p.reserva), money(p.total), money(p.real)];
-      }));
-      html += "</section>";
-
-      // 4) Resultado mês a mês no ano
+      // 4) Resultado realizado no ano
       var year = ref.slice(0, 4), res = [];
       for (var m = 1; m <= 12; m++) {
         var k = year + "-" + String(m).padStart(2, "0"), a = get(by, k);
         res.push({ key: k, v: a.dIncome - (a.dFixed + a.dDebt + a.dVariable) });
       }
-      var acc = res.reduce(function (s, r) { return s + r.v; }, 0);
+      var acc = res.reduce(function (s2, r) { return s2 + r.v; }, 0);
       var pos = res.filter(function (r) { return r.v > 0; }).length, neg = res.filter(function (r) { return r.v < 0; }).length;
-      html += '<section class="cx-card"><div class="cx-card-head"><h2>Resultado realizado em ' + year + '</h2></div>';
-      html += '<div class="cx-kpis">' + kpi("Acumulado no ano", money(acc), pos + " mês(es) no azul · " + neg + " no vermelho") + "</div>";
-      html += legendHTML([{ name: "Superávit", color: C.aqua }, { name: "Déficit", color: C.orange }]);
-      html += '<div class="cx-chart" data-chart="year"></div>';
-      html += tableHTML(["Mês", "Resultado realizado"], res.map(function (r) { return [labelMonth(r.key), money(r.v)]; }));
-      html += "</section>";
+      var yearHtml = '<p class="cx-hero">' + esc(money(acc)) + "</p>" +
+        '<p class="cx-lede">acumulados em ' + year + ": " + pos + " mês(es) com superávit e " + neg + " com déficit, só com o que foi realizado.</p>" +
+        legendHTML([{ name: "Superávit", color: C.aqua }, { name: "Déficit", color: C.orange }]) +
+        '<div class="cx-chart" data-chart="year"></div>' +
+        tableHTML(["Mês", "Resultado realizado"], res.map(function (r) { return [labelMonth(r.key), money(r.v)]; }));
+      html += section("ano", "Resultado de " + year, yearHtml);
 
       // 5) Parcelas e dívidas futuras
-      var inst = installments(entries);
-      html += '<section class="cx-card"><div class="cx-card-head"><h2>Parcelas e dívidas futuras</h2></div>';
-      if (!inst.list.length) html += '<p class="cx-note">Nenhuma parcela prevista a partir deste mês. 🎉</p>';
+      var inst = installments(entries), debtHtml;
+      if (!inst.list.length) debtHtml = '<p class="cx-lede">Nenhuma parcela prevista a partir deste mês.</p>';
       else {
-        html += '<div class="cx-kpis">' + kpi("Total a pagar", money(inst.total), inst.list.length + " compromisso(s)") +
-          kpi("Parcelas ÷ renda média", av.income ? pct(inst.bars[0].v / av.income) : "—", "No mês atual") + "</div>";
-        html += '<div class="cx-sub">Compromissos por mês</div><div class="cx-chart" data-chart="debt"></div>';
-        html += '<div class="cx-list">' + inst.list.slice(0, 8).map(function (g) {
-          return '<div class="cx-li"><div><b>' + esc(g.name) + "</b><small>" + g.count + " parcela(s) · termina em " + esc(labelMonth(g.end.slice(0, 7), true)) + "</small></div><span>" + esc(money(g.left)) + "</span></div>";
-        }).join("") + "</div>";
+        debtHtml = '<p class="cx-hero">' + esc(money(inst.total)) + "</p>" +
+          '<p class="cx-lede">a pagar em ' + inst.list.length + " compromisso(s)" + (av.income ? ". As parcelas deste mês levam " + pct(inst.bars[0].v / av.income) + " da renda média." : ".") + "</p>" +
+          '<div class="cx-chart" data-chart="debt"></div>' +
+          table(["Compra", "Parcelas", "Termina em", "Falta"], inst.list.slice(0, 8).map(function (g) {
+            return [g.name, String(g.count), labelMonth(g.end.slice(0, 7), true), money(g.left)];
+          }), ["", "num", "", "num"]);
       }
-      html += "</section>";
+      html += section("dividas", "Parcelas a pagar", debtHtml);
 
       // 6) Gastos variáveis
       var vs = av.variableSeries, vMean = mean(vs), vSd = sd(vs), cv = vMean ? vSd / vMean : null;
       var curVar = val(cur, "variable");
-      html += '<section class="cx-card"><div class="cx-card-head"><h2>Gastos variáveis</h2></div>';
-      html += '<div class="cx-kpis">' + kpi("Média mensal", money(Math.round(vMean)), av.months.length + " mês(es) de histórico") +
-        kpi("Oscilação (desvio padrão)", money(Math.round(vSd)), "Coef. de variação: " + pct(cv)) +
-        kpi(ref === monthOf(new Date()) ? "Este mês (até agora)" : "Este mês", money(curVar), vMean ? (curVar >= vMean ? "▲ " : "▼ ") + pct(Math.abs(curVar - vMean) / vMean) + " vs média" : "") + "</div>";
-      var atypical = av.months.filter(function (k, i) { return vs.length >= 3 && vs[i] > vMean + 1.5 * vSd; });
-      if (atypical.length) html += '<p class="cx-note cx-warn">Meses atípicos (acima de média + 1,5 desvio): ' + esc(atypical.map(function (k) { return labelMonth(k); }).join(", ")) + ".</p>";
-      // categorias: este mês vs média
+      var varHtml = stats([
+        stat("Média por mês", money(Math.round(vMean)), av.months.length + " mês(es) de histórico"),
+        stat("Oscilação", money(Math.round(vSd)), "Desvio padrão, " + pct(cv) + " da média"),
+        stat(ref === monthOf(new Date()) ? "Este mês, até agora" : "Este mês", money(curVar), relDiff(curVar, vMean))
+      ]);
+      var atypical = av.months.filter(function (k2, i) { return vs.length >= 3 && vs[i] > vMean + 1.5 * vSd; });
+      if (atypical.length) varHtml += '<p class="cx-alert" role="status">' + badge("warn") + " Meses fora do normal (acima da média mais 1,5 desvio): " + esc(atypical.map(function (k2) { return labelMonth(k2); }).join(", ")) + ".</p>";
       var catAvg = {};
-      av.months.forEach(function (k) {
-        var cats = cfg.incluirPrevistos ? get(by, k).cats : get(by, k).dCats;
+      av.months.forEach(function (k2) {
+        var cats = cfg.incluirPrevistos ? get(by, k2).cats : get(by, k2).dCats;
         Object.keys(cats).forEach(function (c) { catAvg[c] = (catAvg[c] || 0) + cats[c] / av.months.length; });
       });
       var curCats = cfg.incluirPrevistos ? cur.cats : cur.dCats;
       var names = Object.keys(Object.assign({}, catAvg, curCats));
       var diffs = names.map(function (c) { return { c: c, now: curCats[c] || 0, avg: catAvg[c] || 0 }; })
         .filter(function (d) { return d.now || d.avg; })
-        .sort(function (a, b) { return Math.abs(b.now - b.avg) - Math.abs(a.now - a.avg); }).slice(0, 5);
+        .sort(function (a2, b2) { return Math.abs(b2.now - b2.avg) - Math.abs(a2.now - a2.avg); }).slice(0, 6);
       if (diffs.length && av.months.length && av.months[0] !== ref) {
-        html += '<div class="cx-sub">Variáveis por categoria <small>(este mês vs média)</small></div><div class="cx-list">' +
-          diffs.map(function (d) {
-            var delta = d.now - d.avg, up = delta > 0;
-            return '<div class="cx-li"><div><b>' + esc(d.c) + "</b><small>média " + esc(money(Math.round(d.avg))) + "</small></div><span class=\"" + (up ? "cx-up" : "cx-down") + "\">" +
-              (up ? "▲ " : "▼ ") + esc(money(Math.abs(Math.round(delta)))) + "</span></div>";
-          }).join("") + "</div>";
+        varHtml += "<h3>Por categoria</h3>" + table(["Categoria", "Este mês", "Média", "Diferença"], diffs.map(function (d) {
+          var delta = Math.round(d.now - d.avg);
+          return [d.c, money(d.now), money(Math.round(d.avg)), (delta > 0 ? "+" : delta < 0 ? "−" : "") + money(Math.abs(delta))];
+        }), ["", "num", "num", "num"]);
       }
-      html += "</section>";
+      html += section("variaveis", "Gastos variáveis", varHtml);
 
       // 7) Independência financeira
-      var wealth = cfg.contaSaldo + rsv.value, fi = independence(av, wealth);
-      html += '<section class="cx-card"><div class="cx-card-head"><h2>Independência financeira</h2></div>';
-      html += '<div class="cx-hero"><strong>' + (fi.months == null ? "—" : fi.months === 0 ? "Atingida" : num(fi.months / 12, 1)) + "</strong><span>" +
-        (fi.months == null ? "com a sobra atual, não dá para estimar" : fi.months === 0 ? "seu patrimônio já cobre o custo de vida" : "anos até viver de renda, no ritmo atual") + "</span></div>";
-      var fp = Math.min(1, fi.progress);
-      html += '<div class="cx-progress"><span style="width:' + (fp * 100) + '%"></span></div>' +
-        '<div class="cx-progress-l"><span>' + esc(money(wealth)) + "</span><span>" + pct(fi.progress) + " de " + esc(money(Math.round(fi.target))) + "</span></div>";
-      html += row("Custo de vida anual (média)", money(Math.round(fi.annualCost))) +
-        row("Patrimônio necessário (regra de " + num(cfg.retirada, 1) + "%)", money(Math.round(fi.target))) +
-        row("Sobra média mensal (aporte)", money(Math.round(fi.saving))) +
-        row("Rentabilidade real (acima da inflação)", pct(fi.realAnnual, 2) + " a.a.");
-      html += '<p class="cx-note">Estimativa simples, com juros compostos e valores de hoje. Não é recomendação de investimento.</p></section>';
+      var wealth = cfg.contaSaldo + rsv.value, fi = independence(av, wealth), fp = Math.min(1, fi.progress);
+      var fiHtml = '<p class="cx-hero">' + (fi.months == null ? NONE : fi.months === 0 ? "Atingida" : num(fi.months / 12, 1) + " anos") + "</p>" +
+        '<p class="cx-lede">' + (fi.months == null ? "Com a sobra atual, não dá para estimar." : fi.months === 0 ? "O patrimônio já cobre o custo de vida." : "até viver de renda, no ritmo atual de aportes.") + " Você tem " + pct(fi.progress) + " do patrimônio necessário.</p>" +
+        '<div class="cx-progress" role="progressbar" aria-label="Patrimônio em relação ao necessário" aria-valuenow="' + Math.round(fp * 100) + '" aria-valuemin="0" aria-valuemax="100"><span style="width:' + (fp * 100) + '%"></span></div>' +
+        rows([
+          ["Patrimônio hoje", money(wealth)],
+          ["Patrimônio necessário, regra de " + num(cfg.retirada, 1) + "%", money(Math.round(fi.target))],
+          ["Custo de vida anual médio", money(Math.round(fi.annualCost))],
+          ["Sobra média por mês", money(Math.round(fi.saving))],
+          ["Rentabilidade acima da inflação", pct(fi.realAnnual, 2) + " ao ano"]
+        ]) +
+        '<p class="cx-note">Estimativa simples, com juros compostos e valores de hoje. Não é recomendação de investimento.</p>';
+      html += section("fi", "Independência financeira", fiHtml);
 
       // Premissas
-      html += '<section class="cx-card cx-assume"><h2>Premissas usadas</h2><p>' +
-        "Saldo em conta " + esc(money(cfg.contaSaldo)) + " · reserva informada " + esc(money(cfg.reservaSaldo)) + (cfg.reservaData ? " em " + esc(cfg.reservaData.split("-").reverse().join("/")) : "") +
-        " · rendimento " + num(cfg.rendimento, 2) + "% a.a. · IR " + num(cfg.ir, 1) + "% · inflação " + num(cfg.inflacao, 2) + "% a.a. · médias: " +
-        (cfg.metodo === "mediana" ? "mediana" : "média") + " de até " + cfg.janela + " meses, " + (cfg.incluirPrevistos ? "com previstos" : "só realizados") + ".</p>" +
-        '<button class="cx-outline" data-act="settings">Ajustar parâmetros</button></section>';
+      html += section("premissas", "Premissas", rows([
+        ["Saldo em conta", money(cfg.contaSaldo)],
+        ["Reserva informada", money(cfg.reservaSaldo) + (cfg.reservaData ? ", em " + cfg.reservaData.split("-").reverse().join("/") : "")],
+        ["Rendimento da reserva", num(cfg.rendimento, 2) + "% ao ano, IR de " + num(cfg.ir, 1) + "%"],
+        ["Inflação", num(cfg.inflacao, 2) + "% ao ano"],
+        ["Médias", (cfg.metodo === "mediana" ? "Mediana" : "Média") + " de até " + cfg.janela + " meses, " + (cfg.incluirPrevistos ? "com previstos" : "só realizados")]
+      ]) + '<button class="cx-outline" type="button" data-act="settings">Ajustar parâmetros</button>');
 
       var body = root.querySelector(".cx-body");
       body.innerHTML = html;
@@ -556,43 +582,50 @@
         tipLabel: function () { return "Parcelas"; }
       });
     }).catch(function (e) {
-      root.querySelector(".cx-body").innerHTML = '<section class="cx-card"><p class="cx-note cx-warn">Erro ao montar a análise: ' + esc(e) + "</p></section>";
+      root.querySelector(".cx-body").innerHTML = section("erro", "Não foi possível montar a análise", '<p class="cx-lede">' + esc(e) + "</p>");
     });
   }
 
   // ------------------------------------------------------------------ ajustes
+  var fid = 0;
   function field(label, name, value, hint, attrs) {
-    return '<label class="cx-field"><span>' + esc(label) + "</span><input name=\"" + name + '" value="' + esc(value) + '" ' + (attrs || 'inputmode="decimal"') + ">" +
-      (hint ? "<small>" + esc(hint) + "</small>" : "") + "</label>";
+    var id = "cx-f-" + name, hid = hint ? id + "-h" : "";
+    return '<div class="cx-field"><label for="' + id + '">' + esc(label) + '</label><input id="' + id + '" name="' + name + '" value="' + esc(value) + '" ' +
+      (attrs || 'inputmode="decimal" autocomplete="off"') + (hid ? ' aria-describedby="' + hid + '"' : "") + ">" +
+      (hint ? '<small id="' + hid + '">' + esc(hint) + "</small>" : "") + "</div>";
   }
   function select(label, name, value, options) {
-    return '<label class="cx-field"><span>' + esc(label) + '</span><select name="' + name + '">' + options.map(function (o) {
+    var id = "cx-f-" + name;
+    return '<div class="cx-field"><label for="' + id + '">' + esc(label) + '</label><select id="' + id + '" name="' + name + '">' + options.map(function (o) {
       return '<option value="' + o[0] + '"' + (String(o[0]) === String(value) ? " selected" : "") + ">" + esc(o[1]) + "</option>";
-    }).join("") + "</select></label>";
+    }).join("") + "</select></div>";
+  }
+  function group(legend, inner, note) {
+    return '<fieldset class="cx-group"><legend>' + esc(legend) + "</legend>" + (note ? '<p class="cx-note">' + esc(note) + "</p>" : "") + inner + "</fieldset>";
   }
   function openSettings() {
     var f = settingsDlg.querySelector("form");
     f.innerHTML =
-      '<div class="cx-toggle-row"><div><b>Usar economia complexa</b><small>Libera a aba Análise, com indicadores, projeções e parâmetros mais precisos.</small></div>' +
-      '<label class="cx-switch"><input type="checkbox" name="enabled"' + (cfg.enabled ? " checked" : "") + '><span></span></label></div>' +
+      '<div class="cx-toggle-row"><div><label for="cx-f-enabled"><b>Usar economia complexa</b></label><p id="cx-f-enabled-h">Mostra a aba Análise, com projeções, indicadores e os parâmetros abaixo.</p></div>' +
+      '<span class="cx-switch"><input type="checkbox" role="switch" id="cx-f-enabled" name="enabled" aria-describedby="cx-f-enabled-h"' + (cfg.enabled ? " checked" : "") + '><span aria-hidden="true"></span></span></div>' +
       '<div class="cx-params"' + (cfg.enabled ? "" : " hidden") + ">" +
-      '<h3>Seu patrimônio hoje</h3><div class="cx-grid2">' +
-      field("Saldo em conta (R$)", "contaSaldo", moneyInput(cfg.contaSaldo), "Dinheiro disponível hoje") +
-      field("Saldo da reserva (R$)", "reservaSaldo", moneyInput(cfg.reservaSaldo), "Valor guardado antes dos aportes lançados") +
-      "</div>" + field("Data desse saldo da reserva", "reservaData", cfg.reservaData, "Aportes depois desta data são somados. Deixe vazio se o saldo é anterior a todos.", 'type="date" min="1900-01-01" max="2200-12-31"') +
-      '<h3>Mercado <small>(estimativas — ajuste aos seus números)</small></h3><div class="cx-grid3">' +
-      field("Rendimento (% a.a.)", "rendimento", num(cfg.rendimento, 2)) +
-      field("IR sobre ganho (%)", "ir", num(cfg.ir, 1)) +
-      field("Inflação (% a.a.)", "inflacao", num(cfg.inflacao, 2)) + "</div>" +
-      "<h3>Metas</h3><div class=\"cx-grid3\">" +
-      field("Necessidades (%)", "ideal0", cfg.ideal[0]) + field("Desejos (%)", "ideal1", cfg.ideal[1]) + field("Poupança (%)", "ideal2", cfg.ideal[2]) + "</div>" +
-      '<div class="cx-grid2">' + field("Reserva ideal (meses)", "metaMeses", cfg.metaMeses) +
-      field("Retirada segura (% a.a.)", "retirada", num(cfg.retirada, 1), "Para a independência financeira") + "</div>" +
-      "<h3>Precisão dos cálculos</h3><div class=\"cx-grid2\">" +
-      select("Histórico das médias", "janela", cfg.janela, [[3, "3 meses"], [6, "6 meses"], [12, "12 meses"], [24, "24 meses"]]) +
-      select("Método", "metodo", cfg.metodo, [["media", "Média"], ["mediana", "Mediana (ignora extremos)"]]) +
-      select("Horizonte da projeção", "horizonte", cfg.horizonte, [[12, "12 meses"], [24, "24 meses"], [36, "36 meses"], [60, "60 meses"]]) +
-      "</div>" + '<label class="cx-check"><input type="checkbox" name="incluirPrevistos"' + (cfg.incluirPrevistos ? " checked" : "") + "> Incluir lançamentos previstos nas médias</label>" +
+      group("Seu patrimônio hoje", '<div class="cx-grid2">' +
+        field("Saldo em conta (R$)", "contaSaldo", moneyInput(cfg.contaSaldo), "Dinheiro disponível hoje") +
+        field("Saldo da reserva (R$)", "reservaSaldo", moneyInput(cfg.reservaSaldo), "Guardado antes dos aportes lançados") + "</div>" +
+        field("Data desse saldo da reserva", "reservaData", cfg.reservaData, "Aportes depois desta data são somados. Vazio: o saldo é anterior a todos.", 'type="date" min="1900-01-01" max="2200-12-31"')) +
+      group("Mercado", '<div class="cx-grid3">' +
+        field("Rendimento (% a.a.)", "rendimento", num(cfg.rendimento, 2)) +
+        field("IR sobre ganho (%)", "ir", num(cfg.ir, 1)) +
+        field("Inflação (% a.a.)", "inflacao", num(cfg.inflacao, 2)) + "</div>", "São estimativas: ajuste aos seus números.") +
+      group("Metas", '<div class="cx-grid3">' +
+        field("Necessidades (%)", "ideal0", cfg.ideal[0]) + field("Desejos (%)", "ideal1", cfg.ideal[1]) + field("Poupança (%)", "ideal2", cfg.ideal[2]) + "</div>" +
+        '<div class="cx-grid2">' + field("Reserva ideal (meses)", "metaMeses", cfg.metaMeses) +
+        field("Retirada segura (% a.a.)", "retirada", num(cfg.retirada, 1), "Para a independência financeira") + "</div>") +
+      group("Precisão dos cálculos", '<div class="cx-grid2">' +
+        select("Histórico das médias", "janela", cfg.janela, [[3, "3 meses"], [6, "6 meses"], [12, "12 meses"], [24, "24 meses"]]) +
+        select("Método", "metodo", cfg.metodo, [["media", "Média"], ["mediana", "Mediana (ignora extremos)"]]) +
+        select("Horizonte da projeção", "horizonte", cfg.horizonte, [[12, "12 meses"], [24, "24 meses"], [36, "36 meses"], [60, "60 meses"]]) +
+        "</div>" + '<label class="cx-check"><input type="checkbox" name="incluirPrevistos"' + (cfg.incluirPrevistos ? " checked" : "") + "> Incluir lançamentos previstos nas médias</label>") +
       "</div>" + '<p class="cx-error" role="alert" hidden></p>' +
       '<button class="cx-primary" type="submit">Salvar</button>';
     var sw = f.querySelector('[name="enabled"]');
@@ -614,7 +647,7 @@
         next.ir = parseNum(g("ir").value, 0, 100, "IR");
         next.inflacao = parseNum(g("inflacao").value, -50, 100, "Inflação");
         next.ideal = [parseNum(g("ideal0").value, 0, 100, "Necessidades"), parseNum(g("ideal1").value, 0, 100, "Desejos"), parseNum(g("ideal2").value, 0, 100, "Poupança")];
-        if (Math.abs(next.ideal[0] + next.ideal[1] + next.ideal[2] - 100) > 0.01) throw "Necessidades + desejos + poupança precisam somar 100%.";
+        if (Math.abs(next.ideal[0] + next.ideal[1] + next.ideal[2] - 100) > 0.01) throw "Necessidades, desejos e poupança precisam somar 100%.";
         next.metaMeses = parseNum(g("metaMeses").value, 1, 60, "Reserva ideal");
         next.retirada = parseNum(g("retirada").value, 0.5, 20, "Retirada segura");
         next.janela = +g("janela").value;
@@ -647,6 +680,7 @@
   function build() {
     gear = document.createElement("button");
     gear.className = "cx-gear";
+    gear.type = "button";
     gear.setAttribute("aria-label", "Ajustes e economia complexa");
     gear.innerHTML = ICON.gear;
     gear.addEventListener("click", openSettings);
@@ -662,6 +696,7 @@
       if (!b) return;
       var act = b.getAttribute("data-act");
       if (act === "settings") openSettings();
+      if (act === "mensal") { closeView(); var nb = document.querySelector(".sidebar nav button"); if (nb) nb.click(); }
       if (act === "prev") { view.month = addMonth(view.month, -1); render(); }
       if (act === "next") { view.month = addMonth(view.month, 1); render(); }
     });
@@ -669,7 +704,8 @@
 
     settingsDlg = document.createElement("dialog");
     settingsDlg.className = "cx-dialog";
-    settingsDlg.innerHTML = '<div class="cx-dialog-head"><h2>Ajustes</h2><button type="button" aria-label="Fechar">' + ICON.close + "</button></div><form novalidate></form>";
+    settingsDlg.setAttribute("aria-labelledby", "cx-settings-title");
+    settingsDlg.innerHTML = '<div class="cx-dialog-head"><h2 id="cx-settings-title">Ajustes</h2><button type="button" aria-label="Fechar">' + ICON.close + "</button></div><form novalidate></form>";
     settingsDlg.querySelector(".cx-dialog-head button").addEventListener("click", function () { settingsDlg.close(); });
     settingsDlg.addEventListener("click", function (ev) { if (ev.target === settingsDlg) settingsDlg.close(); });
     settingsDlg.querySelector("form").addEventListener("submit", saveSettings);

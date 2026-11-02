@@ -1,0 +1,25 @@
+/* Hallmark · shape: app screen · genre: editorial (inferred) · theme: brand · redesign: restyle (Mensal, Anual, formulários) + full (Análise, Ajustes)
+ * paper: oklch(97.6% 0.007 122) · accent: oklch(39.6% 0.056 165) · display: system sans · body: system sans
+ * nav: kept (barra de abas no celular, lateral no computador) · footer: kept (rodapé da barra lateral, texto reescrito) · signature: kept (o "Disponível para novos gastos"); Análise: a projeção de patrimônio · states: empty, full
+ * axes: light/grotesk-sans/chromatic-green · posture: restrained · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P3 H4 E4 S4 R4 V3 · weakest: V e P, o layout do React compilado não pode ser recomposto sem o código-fonte; o redesign completo ficou na Análise, que lidera pela projeção em vez de quatro cartões */
+/* Hallmark · waive 8 · Mensal e Anual vêm do React compilado do Economist.exe, sem código-fonte · a ordem e a composição das seções ficam as do app original */
+/* Hallmark · waive 42 · a navegação é a do app original (barra lateral no computador, abas no celular) · mudar a estrutura exigiria o código-fonte do React */
+/* Hallmark · reworded "Seu mês, sob controle." to "Planejamento mensal" · 54 names the eyebrow over it */
+/* Hallmark · reworded "Cada mês conta." to "Panorama anual" · 54 names the eyebrow over it */
+/* Hallmark · dropped "SEU DINHEIRO, COM DIREÇÃO" · 54 names the eyebrow */
+/* Hallmark · dropped "Feito para cuidar do que importa." · 19 names filler */
+/* Hallmark · reworded "BRL · Armazenamento local · Sem conexão bancária" to "Valores em reais, guardados no aparelho, sem conexão com banco." · 63 names the dot-joined meta */
+/* Hallmark · reworded "Análise avançada" to "Análise" · the plain name of the tab; the ECONOMIA COMPLEXA eyebrow above it is dropped, 54 */
+/* Hallmark · reworded "Projeção de patrimônio" to "Patrimônio em {mês}" · the section now leads with the figure it projects */
+/* Hallmark · reworded "Resultado realizado em 2026" to "Resultado de {ano}" · shorter; the year stays in the head */
+/* Hallmark · reworded "Parcelas e dívidas futuras" to "Parcelas a pagar" · plain name of what the table lists */
+/* Hallmark · reworded "Premissas usadas" to "Premissas" · every figure in it is an assumption, so "usadas" said nothing */
+/* Hallmark · reworded "Seu patrimônio hoje" to "Seu patrimônio hoje" · kept as the legend of its fieldset in Ajustes, no longer a heading */
+/* Hallmark · reworded "Mercado (estimativas — ajuste aos seus números)" to "Mercado" · legend of its fieldset; the aside moved to the group note */
+/* Hallmark · reworded "Metas" to "Metas" · kept as the legend of its fieldset in Ajustes */
+/* Hallmark · reworded "Precisão dos cálculos" to "Precisão dos cálculos" · kept as the legend of its fieldset in Ajustes */
+/* Hallmark · reworded "$8.399,40" to "R$ 8.399,40" · figure kept, written in reais */
+/* Hallmark · reworded "$1.500,00" to "R$ 1.500,00" · figure kept, written in reais */
+@import url("./tokens.css");
+@import url("./base.css");

@@ -1,8 +1,41 @@
-/* Economist Mobile — ajustes para telas de celular (aplicados por cima do CSS original). */
+/* Economist · restyle das telas originais (Mensal, Anual, formulários) sobre o sistema de tokens.
+ * O layout do React compilado é mantido; aqui mudam cor, tipo, estados e as peças que liam como geradas. */
+
 html { -webkit-text-size-adjust: 100%; }
-body { background: #f7f8f4; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+body { background: var(--color-paper); -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
 /* O utilitário .fixed do Tailwind colidia com o tipo "fixed" (despesa fixa) no ícone. */
 .entry-icon.fixed { position: static; }
+
+/* ---------- foco, toque e estados (todas as telas) ---------- */
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--color-focus) !important; outline-offset: 2px; box-shadow: none; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -1px; }
+button:not(:disabled):active { transform: translateY(1px); }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+button, .status, nav button { transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+
+/* ---------- tipografia ---------- */
+h1, h2, .panel-head h2 { text-wrap: balance; letter-spacing: -0.01em; }
+.big-money, .stat > strong, .value, .budget-breakdown b, .goal-values b, .category-line b, .annual-table td, .year-result strong { font-variant-numeric: tabular-nums; }
+/* rótulos em caixa normal, sem espaçamento (antes: maiúsculas espaçadas) */
+.soft-badge, .nav-label, .count, .badge { text-transform: none !important; letter-spacing: 0 !important; font-size: var(--text-xs) !important; font-weight: 600; }
+.soft-badge { background: none; padding: 0; color: var(--color-muted); }
+
+/* ---------- o que lia como gerado ---------- */
+.stat-icon { display: none !important; }                  /* ícone num quadradinho em cada número */
+.top-status > span:first-child, .local > span:first-child { display: none !important; } /* pontinho decorativo */
+button .lucide-arrow-right { display: none; }             /* seta colada no texto do botão */
+dialog { border: 0; box-shadow: var(--shadow-float); }   /* borda e sombra juntas: fica a sombra */
+nav button { white-space: nowrap; }
+.text-button { min-height: 36px; padding-inline: var(--space-xs); border-radius: var(--radius-control); }
+.text-button:hover { background: var(--color-paper-2); }
+
+/* Os quatro números do topo: uma linha de números separada por linhas finas, não quatro cartões. */
+.stats { gap: 0 !important; border-top: var(--rule-hair) solid var(--color-rule); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.stat { background: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; padding: var(--space-md) var(--space-md) var(--space-md) 0 !important; }
+.stat + .stat { border-left: var(--rule-hair) solid var(--color-rule) !important; padding-left: var(--space-md) !important; }
+.stat > div span:first-child { color: var(--color-ink-2); font-size: var(--text-sm); }
+.stat > small { color: var(--color-muted); font-size: var(--text-xs); }
 
 @media (max-width: 640px) {
   /* ---------- Barra lateral vira barra de abas inferior ---------- */
@@ -12,24 +45,23 @@ body { background: #f7f8f4; -webkit-tap-highlight-color: transparent; overscroll
     height: auto;
     flex-direction: row;
     align-items: stretch;
-    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    padding: var(--space-2xs) var(--space-xs) calc(var(--space-2xs) + env(safe-area-inset-bottom));
     border-right: 0;
-    border-top: 1px solid #e6e9e0;
-    background: rgba(255, 255, 255, 0.96);
+    border-top: var(--rule-hair) solid var(--color-rule);
+    background: color-mix(in oklab, var(--color-surface) 96%, transparent);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
-    z-index: 20;
+    z-index: var(--z-sticky-nav);
   }
   .brand, .workspace, .nav-label, .side-note,
   .side-bottom .local, .side-bottom small { display: none !important; }
   nav, .side-bottom {
     display: flex !important;
     flex: 2;
-    gap: 4px;
+    gap: var(--space-2xs);
     margin: 0;
     padding: 0;
   }
-  .side-bottom { flex: 2; }
   nav button, .side-bottom > button {
     flex: 1;
     width: auto;
@@ -37,22 +69,21 @@ body { background: #f7f8f4; -webkit-tap-highlight-color: transparent; overscroll
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 4px;
-    padding: 6px 2px;
-    border-radius: 10px;
-    font-size: 10.5px !important;
+    gap: var(--space-2xs);
+    padding: var(--space-2xs) var(--space-3xs);
+    border-radius: var(--radius-control);
     line-height: 1.15;
     text-align: center;
-    color: #778576;
+    color: var(--color-muted);
   }
-  nav button svg, .side-bottom > button svg { width: 21px; height: 21px; flex-shrink: 0; }
-  nav button.active { background: #eef3e8; color: #244e3d; }
+  nav button svg, .side-bottom > button svg { width: 22px; height: 22px; flex-shrink: 0; }
+  nav button.active { background: var(--color-paper-2); color: var(--color-accent); }
   /* rótulos curtos nas abas */
   nav button, .side-bottom > button { font-size: 0 !important; }
-  nav button::after, .side-bottom > button::after { font-size: 10.5px; font-weight: 550; display: block; position: static; background: none; width: auto; height: auto; }
+  nav button::after, .side-bottom > button::after { font-size: var(--text-xs); font-weight: 600; display: block; position: static; background: none; width: auto; height: auto; }
   nav button:nth-child(1)::after, nav button.active:nth-child(1)::after { content: "Mensal"; }
   nav button:nth-child(2)::after, nav button.active:nth-child(2)::after { content: "Anual"; }
-  nav button.active::after { display: block !important; margin: 0 !important; border-radius: 0; background: none !important; width: auto !important; height: auto !important; color: #244e3d; }
+  nav button.active::after { display: block !important; margin: 0 !important; border-radius: 0; background: none !important; width: auto !important; height: auto !important; color: var(--color-accent); }
   .side-bottom > button:nth-of-type(1)::after { content: "Backup"; }
   .side-bottom > button:nth-of-type(2)::after { content: "Restaurar"; }
 
@@ -61,109 +92,113 @@ body { background: #f7f8f4; -webkit-tap-highlight-color: transparent; overscroll
   /* ---------- Topo ---------- */
   .topbar {
     height: auto;
-    padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+    padding: calc(var(--space-sm) + env(safe-area-inset-top)) var(--space-md) var(--space-sm);
     position: sticky;
     top: 0;
-    z-index: 10;
-    background: rgba(250, 251, 247, 0.95);
+    z-index: var(--z-sticky);
+    background: color-mix(in oklab, var(--color-paper) 95%, transparent);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
+    font-size: var(--text-sm);
   }
-  .top-status { display: flex !important; font-size: 10px; }
-  .content { padding: 18px 14px 10px; }
+  .top-status { display: flex !important; font-size: var(--text-xs); color: var(--color-muted); }
+  .content { padding: var(--space-md) var(--space-md) var(--space-sm); }
 
-  .page-heading { align-items: center; gap: 12px; }
-  .page-heading .eyebrow { font-size: 9px; }
-  h1 { font-size: 23px; line-height: 1.15; }
-  .page-heading p { font-size: 12px; margin-top: 6px; }
+  .page-heading { align-items: center; gap: var(--space-sm); }
+  h1 { font-size: var(--text-2xl); line-height: 1.1; }
+  .page-heading p { font-size: var(--text-sm); margin-top: var(--space-2xs); color: var(--color-ink-2); }
   .page-heading > .primary {
-    width: 50px; height: 50px; padding: 0; border-radius: 14px;
+    width: 48px; height: 48px; padding: 0; border-radius: var(--radius-card);
     justify-content: center; flex-shrink: 0; font-size: 0;
   }
   .page-heading > .primary svg { width: 22px; height: 22px; }
 
   /* Período: seletor ocupa a linha, "Mensal/Anual" já está nas abas */
-  .period-row { flex-wrap: wrap; gap: 8px; margin: 18px 0 16px; }
+  .period-row { flex-wrap: wrap; gap: var(--space-xs); margin: var(--space-md) 0; }
   .period-row .segmented { display: none; }
   .period-picker {
     flex: 1; justify-content: space-between;
-    background: #fff; border: 1px solid #e5e9df; border-radius: 10px; padding: 4px;
+    background: var(--color-surface); border: var(--rule-hair) solid var(--color-rule); border-radius: var(--radius-control); padding: var(--space-2xs);
   }
   .period-picker button { min-width: 40px; min-height: 40px; }
-  .period-picker strong { flex: 1; text-align: left; font-size: 13px; }
-  .period-row .text-button { min-height: 48px; padding: 0 12px; }
+  .period-picker strong { flex: 1; text-align: left; font-size: var(--text-sm); }
+  .period-row .text-button { min-height: 48px; padding: 0 var(--space-sm); }
 
-  /* ---------- Cartões de resumo ---------- */
-  .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .stat { padding: 13px 12px; border-radius: 12px; min-width: 0; }
-  .stat > div span:first-child { font-size: 10.5px; }
-  .stat > strong { font-size: 18px; letter-spacing: -0.4px; display: block; overflow-wrap: anywhere; }
-  .stat > small { font-size: 9.5px; line-height: 1.35; }
-  .stat-icon { width: 26px; height: 26px; }
+  /* ---------- Números do topo: 2 x 2, separados por linhas ---------- */
+  .stats { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .stat { padding: var(--space-sm) var(--space-sm) var(--space-sm) 0 !important; min-width: 0; }
+  .stat:nth-child(odd) { border-left: 0 !important; padding-left: 0 !important; }
+  .stat:nth-child(even) { padding-left: var(--space-sm) !important; }
+  .stat:nth-child(n + 3) { border-top: var(--rule-hair) solid var(--color-rule) !important; }
+  .stat > strong { font-size: var(--text-lg); letter-spacing: -0.01em; display: block; overflow-wrap: anywhere; }
+  .stat > small { line-height: 1.35; }
 
-  .dashboard-grid, .lower-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 12px; }
-  .panel { padding: 18px 16px; border-radius: 14px; min-width: 0; }
-  .panel-head h2 { font-size: 16px; }
-  .big-money { font-size: 30px; }
-  .budget-symbol { width: 54px; height: 54px; }
-  .budget-symbol svg { width: 26px; height: 26px; }
-  .budget-breakdown { gap: 8px; }
-  .budget-breakdown b { font-size: 12.5px; }
+  .dashboard-grid, .lower-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-sm); margin-top: var(--space-sm); }
+  .panel { padding: var(--space-md); border-radius: var(--radius-card); min-width: 0; }
+  .panel-head h2 { font-size: var(--text-lg); }
+  .big-money { font-size: var(--text-3xl); }
+  .budget-symbol { display: none; }
+  .budget-breakdown { gap: var(--space-xs); }
+  .budget-breakdown span, .goal-values span, .progress-label { font-size: var(--text-xs); }
+  .budget-breakdown b { font-size: var(--text-sm); }
   .chart { height: 220px; }
   .categories { display: block !important; }
 
-  /* ---------- Lançamentos como cartões ---------- */
-  .transactions { padding: 18px 0 4px; }
-  .transactions .panel-head { padding: 0 16px; }
-  .table-tools { padding: 0 16px; margin: 14px 0 6px; flex-wrap: wrap; }
+  /* ---------- Lançamentos como blocos rotulados ---------- */
+  .transactions { padding: var(--space-md) 0 var(--space-2xs); }
+  .transactions .panel-head { padding: 0 var(--space-md); }
+  .table-tools { padding: 0 var(--space-md); margin: var(--space-sm) 0 var(--space-2xs); flex-wrap: wrap; }
   .table-tools .search { flex: 1 1 100%; min-height: 44px; }
   .table-tools select { flex: 1 1 100%; width: 100%; max-width: none; min-height: 44px; }
-  .search input, .table-tools select { font-size: 16px; } /* evita zoom automático no iPhone */
+  .search input, .table-tools select { font-size: var(--text-md); } /* 16px: evita zoom automático no iPhone */
 
   .transactions .table-scroll { overflow: visible; }
   .transactions table, .transactions tbody { display: block; white-space: normal; }
   .transactions thead { display: none; }
   .transactions tr {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas: "desc value" "date status" "actions actions";
     align-items: center;
-    column-gap: 10px;
-    row-gap: 6px;
-    padding: 12px 16px;
-    border-bottom: 1px solid #f0f2eb;
+    column-gap: var(--space-sm);
+    row-gap: var(--space-2xs);
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: var(--rule-hair) solid var(--color-rule);
   }
   .transactions tr:last-child { border-bottom: 0; }
   .transactions td { padding: 0 !important; border: 0; }
   .transactions td:nth-child(1) { grid-area: desc; min-width: 0; }
-  .transactions td:nth-child(2) { grid-area: date; padding-left: 42px !important; color: #97a08a; font-size: 11px; }
+  .transactions td:nth-child(2) { grid-area: date; padding-left: 44px !important; color: var(--color-muted); font-size: var(--text-xs); }
   .transactions td:nth-child(3) { grid-area: status; justify-self: end; }
-  .transactions td:nth-child(4) { grid-area: value; font-size: 13.5px; font-weight: 650; white-space: nowrap; }
-  .transactions td:nth-child(5) { grid-area: actions; justify-self: end; margin-top: -32px; margin-right: 92px; }
-  .entry-description b { max-width: none; font-size: 13px; }
-  .entry-description small { font-size: 10.5px; }
-  .status { font-size: 10.5px; padding: 7px 10px; min-height: 30px; }
-  .row-actions { gap: 4px; }
-  .row-actions button { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; background: #f6f7f2; }
+  .transactions td:nth-child(4) { grid-area: value; font-size: var(--text-sm); font-weight: 600; white-space: nowrap; }
+  .transactions td:nth-child(5) { grid-area: actions; justify-self: end; margin-top: -36px; margin-right: var(--space-3xl); }
+  .entry-description b { max-width: none; font-size: var(--text-sm); }
+  .entry-description small { font-size: var(--text-xs); }
+  .status { font-size: var(--text-xs); padding: var(--space-xs) var(--space-sm); min-height: 32px; }
+  .row-actions { gap: var(--space-2xs); }
+  .row-actions button { width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--radius-control); background: var(--color-paper-2); }
 
   /* Tabela anual: rola na horizontal dentro do painel */
-  .annual-table { padding: 18px 0 6px; margin-top: 12px; }
-  .annual-table .panel-head { padding: 0 16px; }
+  .annual-table { padding: var(--space-md) 0 var(--space-2xs); margin-top: var(--space-sm); }
+  .annual-table .panel-head { padding: 0 var(--space-md); }
   .annual-table .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .annual-table table { font-size: 12px; }
+  .annual-table table { font-size: var(--text-xs); }
 
-  footer { padding: 18px 4px 6px; font-size: 10px; }
+  footer { padding: var(--space-md) var(--space-2xs) var(--space-2xs); font-size: var(--text-xs); color: var(--color-muted); }
 
   /* ---------- Janelas (formulários) como folha inferior ---------- */
   dialog {
-    width: 100vw; max-width: 100vw;
+    width: 100%; max-width: 100%;
     margin: auto 0 0 0;
     max-height: 92vh;
-    border-radius: 20px 20px 0 0;
-    padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
-    border-left: 0; border-right: 0; border-bottom: 0;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    padding: var(--space-lg) var(--space-md) calc(var(--space-lg) + env(safe-area-inset-bottom));
   }
-  dialog input, dialog select { font-size: 16px; min-height: 46px; }
-  dialog .form-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  dialog button.full { min-height: 50px; }
+  dialog input, dialog select { font-size: var(--text-md); min-height: 44px; }
+  dialog .form-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-sm); }
+  dialog button.full { min-height: 48px; }
 }
+
+/* ---------- categoria e tipo do lançamento (antes "Moradia · Despesa fixa") ---------- */
+.entry-description small { display: flex; flex-wrap: wrap; gap: 0 var(--space-xs); }
+.meta-kind { color: var(--color-muted); }
